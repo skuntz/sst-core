@@ -215,10 +215,17 @@ public:
     template <typename classT, typename dataT = void>
     using Handler = SSTHandler<bool, int, classT, dataT>;
 
+    /**
+       New style (checkpointable) SSTHandler
+    */
+    template <typename classT, auto funcT, typename dataT = void>
+    using Handler2 = SSTHandler2<bool, int, classT, dataT, funcT>;
+
 
 public:
     /** Constructor, designed to be used via 'loadUserSubComponent or loadAnonymousSubComponent'. */
     SimpleNetwork(SST::ComponentId_t id) : SubComponent(id) {}
+    SimpleNetwork() {}
 
     /**
      * Sends a network request during untimed phases (init() and
