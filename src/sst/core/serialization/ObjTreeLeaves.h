@@ -15,6 +15,7 @@
 #include <string>
 #include <iostream>
 #include <ostream>
+#include <variant>
 
 namespace SST {
     class ComponentInfoMap;
