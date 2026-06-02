@@ -3297,9 +3297,49 @@ parseComparison(std::vector<std::string>& tokens, size_t& index, Core::Serializa
     }
 }
 
+// Add function to check for type mismatch in 'set <var> <val>' action
+bool 
+DebugConsole::checkValue( Core::Serialization::ObjTreeCont::NodeKind expectedType, const std::string& valToCheck )
+{
+    switch (expectedType) {
+        case Core::Serialization::ObjTreeCont::NodeKind::Integer: 
+            try {
+                size_t  pos = 0;
+                [[maybe_unused]]
+                int64_t v = std::stoll(valToCheck, &pos);
+                return ( valToCheck.size() == pos );
+            } catch (...) {
+                return false;
+            }
+            break;
+        case Core::Serialization::ObjTreeCont::NodeKind::Float:
+            try {
+                size_t  pos = 0;
+                [[maybe_unused]]
+                double v = std::stold(valToCheck, &pos);
+                return ( valToCheck.size() == pos );
+            }
+            catch (...) {
+                return false;
+            }
+            break;
+        case Core::Serialization::ObjTreeCont::NodeKind::String:
+            return true; 
+            break;
+        case Core::Serialization::ObjTreeCont::NodeKind::Bool:
+            if ( valToCheck == "true" || valToCheck == "false" || valToCheck == "1" || valToCheck == "0" ) {
+                return true; 
+            }
+            return false;
+            break;
+        default:
+            return false; // Will this break if it is an element in a ContainerObj??
+    }
+}
+
 // helper function to parse watchpoint action string
 WatchPoint::WPAction*
-parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjTreeCont* obj)
+DebugConsole::parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization::ObjTreeCont* obj)
 {
     const std::string& action = tokens[index++];
 
@@ -3354,7 +3394,10 @@ parseAction(std::vector<std::string>& tokens, size_t& index, Core::Serialization
         // if ( !map->checkValue(tval) ) {
         //      return nullptr;
         //  }
-
+        if ( !checkValue(map->getKind(), tval) ) {
+            std::cout << "Invalid type for value: " << tval << std::endl;
+            return nullptr;
+        }
 
         std::string                       name;
         Core::Serialization::ObjTreeCont* parent = obj->getParent();
